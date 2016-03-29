@@ -34,8 +34,8 @@ struct RobustLine {
     bool isNeighbor(const cv::Point &p) const;
 
     static bool isNeighbor(const cv::Point &p1, const cv::Point &p2) {
-		if ( abs(p1.y - p2.y) == 0) return false;
-		else
+//		if ( abs(p1.y - p2.y) == 0) return false;
+//		else
         return abs(p1.x - p2.x) + abs(p1.y - p2.y) <= 12; //GIO : it was <= 4
     }
     static void initAllLines(vector<RobustLine> &vLine, vector<cv::Point> &vPntDat);

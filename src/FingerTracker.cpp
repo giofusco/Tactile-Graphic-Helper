@@ -44,52 +44,6 @@ float FingerTracker::getWeight(cv::Point p, int r, cv::Mat img) {
 void FingerTracker::track(cv::Mat hand, float adjustment){
 	static int counter = 0;
 	cv::Mat hand_filtered = hand.clone();
-	/*cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS,
-		cv::Size(2 * 5 + 1, 2 * 5+ 1),
-		cv::Point(5, 5));
-	erode(hand_filtered, hand_filtered, element);*/
-	/// Apply the erosion operation
-
-
-//	dilate(hand_filtered,hand_filtered,diamond2,Point(-1,-1));
-//	morphologyEx(hand_filtered,hand_filtered,CV_MOP_CLOSE,diamond2,Point(-1,-1),1);
-	//erode(hand_filtered,hand_filtered,cv::Mat(),Point(-1,-1));
-//	dilate(hand_filtered,hand_filtered,cv::Mat(),Point(-1,-1));
-
-//	cv::Mat holes;
-//	hand_filtered.copyTo(holes);
-	
-	/*cerr << "* " << holes.size() << " Filling holes -- ";
-	if (holes.at<uchar>(0,0) == 0){
-		cerr << Point(0,0) << endl;
-		floodFill(holes,Point(0,0),255);
-	}*/
-	//else if (holes.at<uchar>(0, holes.size().height-1) == 0){
-	//	cerr << Point(0, holes.size().height-1) << endl;
-	//	floodFill(holes,Point(0,holes.size().height-1),255);
-	//	
-	//}
-	//else if (holes.at<uchar>(holes.size().width-1,0) == 0){
-	//	cerr << Point(holes.size().width-1,0) << endl;
-	//	floodFill(holes,Point(holes.size().width-1,0),255);
-	//	
-	//}
-/*	else if (holes.at<uchar>(holes.size().width-1,holes.size().height-1) == 0){
-		cerr << Point(holes.size().width-1,holes.size().height-1) << endl;
-		floodFill(holes,Point(holes.size().width-1,holes.size().height-1),255);
-		
-	}*/
-	//cerr << "Done" << endl;
-	//imshow("HOLES", holes);
-	/*for (int r=0;r<holes.rows;r++){
-	for (int c=0;c<holes.cols;c++){
-	if (255 - holes.at<uchar>(r,c) == 255)
-	hand_filtered.at<uchar>(r,c) = 255;
-	}
-	}*/
-
-	//erode(hand_filtered,hand_filtered,diamond2,Point(-1,-1));
-	//holes.release();
 
 	/// Detect edges using Threshold
 	cv::imshow("The Hand Filtered", hand_filtered);
@@ -136,7 +90,7 @@ void FingerTracker::track(cv::Mat hand, float adjustment){
 		RobustLine::getFitteLines(vLine);
 		RobustLine::tryGroupAll(vLine);
 		RobustLine::drawAllLines(vLine, bgrImg);
-		//cv::imshow("All lines", bgrImg);
+		cv::imshow("All lines", bgrImg);
 		//vFinger.clear();
 		vector<cv::Point> candidateTips;
 		cv::Point fingertip;
@@ -164,7 +118,7 @@ void FingerTracker::track(cv::Mat hand, float adjustment){
 				float deltx, delty;
 				if (abs(dx) > abs(dy)) {
 					deltx = dx < 0 ? -1 : 1;
-					delty = deltx * dy / dx;
+					delty = deltx * dy / dx; 
 				} else {
 					delty = dy < 0 ? -1 : 1;
 					deltx = delty * dx / dy;
@@ -177,8 +131,10 @@ void FingerTracker::track(cv::Mat hand, float adjustment){
 					for (int ii = 0; ii < cnt; ii++, x += deltx, y += delty){
 						if (y < dt.rows && x < dt.cols && x>=0 && y>=0){
 							//cerr << "[] x: " << x << ", " << y <<endl;
-							if (dt.at<float>(y, x) < tol)
+							if (dt.at<float>(y, x) <= tol) {
+				//				cerr << "[] x: " << x << ", " << y << ", " << dt.at<float>(y, x) << ", " << tol << endl;
 								break;
+							}
 						}
 					}
 				}

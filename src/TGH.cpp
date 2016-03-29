@@ -87,35 +87,25 @@ void TGH::run(bool verbose){
 	cv::Point2f cursorCoord;
 	static int numFrames = 0;
 
-	//cursor_.setHomography(backGen_.getHomography()); //set the homography to project touched area
-
 	bool show_trace = false;
 
 	cv::Mat hand;
 	grabber_->getCurrentFrame().copyTo(frame);
-	//hand = backGen_.getForegroundMask_TM09(frame,1.5);
 	hand = backGen_.getForegroundMask_SOM(frame);
 
 	tracker_.track(hand,fingerTipOffset);
 	tracker_.showTips(backGen_.getBackgroundImage().clone());
-	//cerr << "Tracker" << endl;
 	numFrames++;
-	//imwrite((to_string(numFrames))+".bmp", hand);
-	//cursorCoord = cursor_.detectCursor(frame,verbose);
-
-	/*if (cursorCoord.x > 0 || cursorCoord.y > 0)
-	cursorTrace_.push_back(cursorCoord);
-	else if (cursorTrace_.size()>0)
-	cursorTrace_.pop_front();*/
 
 	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
 	if (tips.size() == 1){
-		if (tips[0].getStationaryTime() >= 1){
+		if (tips[0].getStationaryTime() >= 1.1){
 			string ans = processQuery("okay what is this");
 			std::wstring stemp = std::wstring(ans.begin(), ans.end());
 			LPCWSTR sw = stemp.c_str();
 			cerr << "TGH says: " << ans << endl;
 			HRESULT hr = pVoice_->Speak(sw, 0, NULL);
+			tips[0].resetStationaryTime(); //to avoid repeated feedback
 		}
 	}
 

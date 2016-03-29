@@ -24,6 +24,7 @@ public:
 										 cv::circle(image, getPosition(5), 7, this->color_, 2); }
 	cv::Point getPosition(int numSample);
 	double getStationaryTime(){ return double(difftime(time(NULL), timer_)); }
+	inline void resetStationaryTime() { time(&timer_); }; //reset timer to current time
 private:
 	static long int id_;
 	cv::Scalar color_;
