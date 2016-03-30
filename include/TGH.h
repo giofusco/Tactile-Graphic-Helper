@@ -34,6 +34,7 @@ public:
 	//void loadTG(string tgfile);
 	void loadTG(string tgdir, string tgfile);
 	string processQuery(string query);
+	inline void mute(bool status) { mute_ = status; }
 
 private:
 	FrameGrabber* grabber_;
@@ -49,6 +50,7 @@ private:
 	bool landscape_;
 	long int frameno_;
 	ISpVoice * pVoice_;
+	bool mute_;
 
 };
 

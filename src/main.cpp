@@ -18,6 +18,7 @@ namespace {
 		std::string tgfilename;
 		std::string videofilename;
 		bool saveVideo;
+		bool mute;
 		int k;
 		float tgH;
 		float tgW;
@@ -39,6 +40,7 @@ namespace {
 			"{ i       |		   |  1           | input. Either a file name, or a digit indicating webcam id }"
 			"{ k |	| 100          | frames for background               }"
 			"{ v |  |              | save video to the specified filename}"
+			"{ m | mute | false | if set to true, TGH won't answer questions}"
 		};
 		cv::CommandLineParser parser(argc, argv, keys);
 		if ((1 == argc) || (parser.get<bool>("h")))
@@ -58,6 +60,7 @@ namespace {
 
 		opts.tgdir = parser.get<std::string>("tgdir");
 		opts.tgfilename = parser.get<std::string>("tgfilename");
+		opts.mute = parser.get<bool>("mute");
 		opts.k = parser.get<int>("k");
 		opts.videofilename = parser.get<std::string>("v");
 		if (!opts.videofilename.empty())
@@ -151,6 +154,7 @@ int main(int argc, char* argv[])
 		//tgh.loadTG(modeldir, modelfile);
 		Mat frame; //current frame
 
+		tgh.mute(options.mute);
 
 		c = -1;
 

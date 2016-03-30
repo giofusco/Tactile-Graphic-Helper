@@ -102,12 +102,14 @@ void TGH::run(bool verbose){
 	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
 	if (tips.size() == 1){
 		if (tips[0].getStationaryTime() >= 1.1){
-			string ans = processQuery("okay what is this");
-			std::wstring stemp = std::wstring(ans.begin(), ans.end());
-			LPCWSTR sw = stemp.c_str();
-			cerr << "TGH says: " << ans << endl;
-			HRESULT hr = pVoice_->Speak(sw, 0, NULL);
-			tips[0].resetStationaryTime(); //to avoid repeated feedback
+			if (!mute_) {
+				string ans = processQuery("okay what is this");
+				std::wstring stemp = std::wstring(ans.begin(), ans.end());
+				LPCWSTR sw = stemp.c_str();
+				clog << "TGH says: " << ans << endl;
+				HRESULT hr = pVoice_->Speak(sw, 0, NULL);
+				tips[0].resetStationaryTime(); //to avoid repeated feedback
+			}
 		}
 	}
 
