@@ -1,33 +1,13 @@
 #include "FrameGrabber.h"
-//#include "../MarkerDetectorAruco/MarkerDetectorAruco.h"
 #include "BackgroundGenerator.h"
 #include "TGH.h"
 #include <opencv2\opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 //#include <voce.h>
- 
-
 
 using namespace cv;
 using namespace std;
-//namespace po = boost::program_options;
 
-
-//cv::Point2f computeIntersect(cv::Vec4i a, cv::Vec4i b)
-//{
-//	int x1 = a[0], y1 = a[1], x2 = a[2], y2 = a[3];
-//	int x3 = b[0], y3 = b[1], x4 = b[2], y4 = b[3];
-//
-//	if (float d = ((float)(x1-x2) * (y3-y4)) - ((y1-y2) * (x3-x4)))
-//	{
-//		cv::Point2f pt;
-//		pt.x = ((x1*y2 - y1*x2) * (x3-x4) - (x1-x2) * (x3*y4 - y3*x4)) / d;
-//		pt.y = ((x1*y2 - y1*x2) * (y3-y4) - (y1-y2) * (x3*y4 - y3*x4)) / d;
-//		return pt;
-//	}
-//	else
-//		return cv::Point2f(-1, -1);
-//}
 
 namespace {
 	/// Parameters and command line arguments
@@ -36,6 +16,8 @@ namespace {
 		std::string input;              // input file stream to process
 		std::string tgdir;
 		std::string tgfilename;
+		std::string videofilename;
+		bool saveVideo;
 		int k;
 		float tgH;
 		float tgW;
@@ -56,6 +38,7 @@ namespace {
 			"{ tgfilename |        |             | model filename }"
 			"{ i       |		   |  1           | input. Either a file name, or a digit indicating webcam id }"
 			"{ k |	| 100          | frames for background               }"
+			"{ v |  |              | save video to the specified filename}"
 		};
 		cv::CommandLineParser parser(argc, argv, keys);
 		if ((1 == argc) || (parser.get<bool>("h")))
@@ -76,6 +59,11 @@ namespace {
 		opts.tgdir = parser.get<std::string>("tgdir");
 		opts.tgfilename = parser.get<std::string>("tgfilename");
 		opts.k = parser.get<int>("k");
+		opts.videofilename = parser.get<std::string>("v");
+		if (!opts.videofilename.empty())
+			opts.saveVideo = true;
+		else opts.saveVideo = false;
+
 		return opts;
 	}
 }
@@ -154,18 +142,9 @@ int main(int argc, char* argv[])
 		grabber->set(CV_CAP_PROP_FRAME_WIDTH, 320);//2304);//1829//1200//800
 		grabber->set(CV_CAP_PROP_FRAME_HEIGHT, 240);//1536); //1080//800//600   
 		grabber->set(CV_CAP_PROP_FPS, 30);
-		grabber->saveToVideo("test.avi");
-//		grabber->set(CV_CAP_PROP_EXPOSURE,0);
-		/*std::cout << grabber->get(CV_CAP_PROP_FRAME_WIDTH) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_FRAME_HEIGHT) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_FPS) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_EXPOSURE) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_FORMAT) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_CONTRAST) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_BRIGHTNESS) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_SATURATION) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_HUE) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_POS_FRAMES) << std::endl;*/
+		
+		if (options.saveVideo)
+			grabber->saveToVideo(options.videofilename);
 
 		  
 		TGH tgh(grabber,options.input,calibrationFilename,modeldir, modelfile, scale,sheetWmt, sheetHmt, 10);
@@ -176,18 +155,12 @@ int main(int argc, char* argv[])
 
 		c = -1;
 
-		const char left = 27;
-		const char right = 26;
-		const char up = 24;
-		const char down = 25;
-
 		cout << "TGH v.0.2" << endl;
 		cout << "Menu:" <<endl;
 		cout << "\t . [b] to (re)generate background" <<endl;
 		cout << "\t . [s] to show/hide background image" << endl;
 		cout << "\t . [t] to start/stop TGH" << endl;
 		cout << "\t . [w] save TG to file for annotation" << endl;
-	//	cout << "\t . " << up << " " << down << " " << left << " " << right << " to adjust cursor (the tracker needs to be on)" << endl;
 		cout << "\t . [Esc] to quit" << endl;
 
 
@@ -240,55 +213,6 @@ int main(int argc, char* argv[])
 			default:
 				break;
 			}
-
-			if (track_finger){
-				//if (c == 2490368) tgh.adjustCursor('u', 0.001); // up
-				//else if (c == 2621440) tgh.adjustCursor('d', 0.001);   // down
-				//else if (c == 2424832) tgh.adjustCursor('l', 0.001);   //  left
-				//else if (c == 2555904) tgh.adjustCursor('r', 0.001); // right
-
-				//use keyboard to ask questions
-				//cerr << "KEY: " << c << endl;
-				//if (c == 32){
-				//	cerr << "What is this" << endl;
-				//	string ans = tgh.processQuery("okay what is this");
-				//	std::wstring stemp = std::wstring(ans.begin(), ans.end());
-				//	LPCWSTR sw = stemp.c_str();
-				//	
-				//	cerr << "TGH says: " << ans << endl;
-				//	//voce::synthesize(ans);
-				//	
-				//	 hr = pVoice->Speak(sw, 0, NULL);
-				//}
-				//else if (c == 13){
-				//	string ans = tgh.processQuery("okay what is there");
-				//	std::wstring stemp = std::wstring(ans.begin(), ans.end());
-				//	LPCWSTR sw = stemp.c_str();
-				//	cerr << "TGH says: " << ans << endl;
-				//	//voce::synthesize(ans);
-				//	 hr = pVoice->Speak(sw, 0, NULL);
-				//}
-
-				////voice recognition stuff
-
-				//while (voce::getRecognizerQueueSize() > 0){
-				//	std::string s = voce::popRecognizedString();
-				//	std::cout << "You said: " << s << std::endl;
-				//	//voce::synthesize(s);
-				//	string ans = tgh.processQuery(s);
-
-				//	if (!ans.empty()){
-				//		std::wstring stemp = std::wstring(ans.begin(), ans.end());
-				//	LPCWSTR sw = stemp.c_str();
-				//		cerr << "TGH says: " << ans << endl;
-				//		//voce::synthesize(ans);
-				//		 hr = pVoice->Speak(sw, 0, NULL);
-				//	}
-
-				//}
-
-			}
-
 		} 
 		return 0;
 	}
