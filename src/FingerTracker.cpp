@@ -43,8 +43,15 @@ float FingerTracker::getWeight(cv::Point p, int r, cv::Mat img) {
 
 void FingerTracker::track(cv::Mat hand, float adjustment){
 	static int counter = 0;
-	cv::Mat hand_filtered = hand.clone();
-
+	cv::Mat tmp_hand_filtered = hand.clone();
+	cv::Mat hand_filtered;
+	medianBlur(hand_filtered, hand_filtered, 3);
+	morphologyEx(tmp_hand_filtered, tmp_hand_filtered, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7)));
+	morphologyEx(tmp_hand_filtered, tmp_hand_filtered, cv::MORPH_ERODE, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7)));
+	morphologyEx(tmp_hand_filtered, tmp_hand_filtered, cv::MORPH_ERODE, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7)));
+	
+	tmp_hand_filtered.convertTo(hand_filtered, CV_8UC1);
+	hand_filtered *= 255;
 	/// Detect edges using Threshold
 	cv::imshow("The Hand Filtered", hand_filtered);
 	cv::moveWindow("The Hand Filtered", 10,10);

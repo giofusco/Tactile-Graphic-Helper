@@ -40,7 +40,8 @@ TGH::TGH(FrameGrabber* grabber, string cameraURL, string calibrationFileName, st
 		//sheetW_ = w;
 		frameno_ = 0;
 		
-		fingerTipOffset = 5;
+		fingerTipOffset = 0; //MODIFIED 3/29/16
+
 		grabber_ = grabber; //initialize the frame grabber
 		grabber_tt_ = grabber_->run(); //start the grabber
 		//instantiate background generator
@@ -91,6 +92,7 @@ void TGH::run(bool verbose){
 
 	cv::Mat hand;
 	grabber_->getCurrentFrame().copyTo(frame);
+	//cv::medianBlur(frame, frame, 3);
 	hand = backGen_.getForegroundMask_SOM(frame);
 
 	tracker_.track(hand,fingerTipOffset);

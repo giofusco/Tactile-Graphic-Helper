@@ -53,7 +53,7 @@ void BackgroundGenerator::computeBackground_SOM(int numFrames, FrameGrabber* gra
 	cv::merge(channels, hsvFrame);
 
 
-	som_ = SOM(hsvFrame, hsvFrame.size().height, hsvFrame.size().width, 3, 3, .15, .15, 1., .001, .5, numFrames); // init SOM
+	som_ = SOM(hsvFrame, hsvFrame.size().height, hsvFrame.size().width, 3, 3, .15, .1, 1., .001, .5, numFrames); // init SOM
 	while (fcnt < numFrames){
 
 		grabber->getCurrentFrame().copyTo(backgroundImage_);

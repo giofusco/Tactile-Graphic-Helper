@@ -55,7 +55,7 @@ namespace {
 			"{ tgdir   |           |             | directory containing the model}"
 			"{ tgfilename |        |             | model filename }"
 			"{ i       |		   |  1           | input. Either a file name, or a digit indicating webcam id }"
-			"{ k |	| 30          | frames for background               }"
+			"{ k |	| 100          | frames for background               }"
 		};
 		cv::CommandLineParser parser(argc, argv, keys);
 		if ((1 == argc) || (parser.get<bool>("h")))
