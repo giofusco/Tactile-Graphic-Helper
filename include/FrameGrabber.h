@@ -77,6 +77,7 @@ using namespace std;
 		cv::Mat currentFrame_; //stores the latest frame grabbed (mutex)
 		cv::VideoWriter writer_;
 		bool saveToVideo_;
+		bool closeVideo_;
 		void grabFrames(); //the grabber thread 
 	};
 

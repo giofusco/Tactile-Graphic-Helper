@@ -153,9 +153,10 @@ int main(int argc, char* argv[])
 		//grabber->set(CV_CAP_PROP_FOURCC, CV_FOURCC('H', '2', '6', '4'));
 		grabber->set(CV_CAP_PROP_FRAME_WIDTH, 320);//2304);//1829//1200//800
 		grabber->set(CV_CAP_PROP_FRAME_HEIGHT, 240);//1536); //1080//800//600   
-//		grabber->set(CV_CAP_PROP_FPS, 30);
+		grabber->set(CV_CAP_PROP_FPS, 30);
+		grabber->saveToVideo("test.avi");
 //		grabber->set(CV_CAP_PROP_EXPOSURE,0);
-		std::cout << grabber->get(CV_CAP_PROP_FRAME_WIDTH) << std::endl;
+		/*std::cout << grabber->get(CV_CAP_PROP_FRAME_WIDTH) << std::endl;
 		std::cout << grabber->get(CV_CAP_PROP_FRAME_HEIGHT) << std::endl;
 		std::cout << grabber->get(CV_CAP_PROP_FPS) << std::endl;
 		std::cout << grabber->get(CV_CAP_PROP_EXPOSURE) << std::endl;
@@ -164,7 +165,7 @@ int main(int argc, char* argv[])
 		std::cout << grabber->get(CV_CAP_PROP_BRIGHTNESS) << std::endl;
 		std::cout << grabber->get(CV_CAP_PROP_SATURATION) << std::endl;
 		std::cout << grabber->get(CV_CAP_PROP_HUE) << std::endl;
-		std::cout << grabber->get(CV_CAP_PROP_POS_FRAMES) << std::endl;
+		std::cout << grabber->get(CV_CAP_PROP_POS_FRAMES) << std::endl;*/
 
 		  
 		TGH tgh(grabber,options.input,calibrationFilename,modeldir, modelfile, scale,sheetWmt, sheetHmt, 10);

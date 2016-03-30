@@ -27,9 +27,12 @@ void FrameGrabber::grabFrames() throw(int){
 
 void FrameGrabber::saveToVideo(string filename){
 	saveToVideo_ = true;
-	if (saveToVideo_){
-		writer_.open(filename,CV_FOURCC('M','J','P','G'),30, cv::Size(480,640));
-	}
+	closeVideo_ = true; //flag to remember to close the video when destroying the object, even if we pause the recording
+//	if (saveToVideo_){
+		cv::Size S = cv::Size((int)get(CV_CAP_PROP_FRAME_WIDTH),    //Acquire input size
+			(int)get(CV_CAP_PROP_FRAME_HEIGHT));
+		writer_.open(filename,CV_FOURCC('M','J','P','G'), get(CV_CAP_PROP_FPS), S,true);
+//	}
 }
 
 void FrameGrabber::stop()
@@ -38,6 +41,8 @@ void FrameGrabber::stop()
 	{
 		frame_mutex_.lock();
 		release();
+		if (closeVideo_)
+			writer_.release();
 		frame_mutex_.unlock();
 	}
 }
