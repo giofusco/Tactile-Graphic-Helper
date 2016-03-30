@@ -143,8 +143,7 @@ int main(int argc, char* argv[])
 		grabber->set(CV_CAP_PROP_FRAME_HEIGHT, 240);//1536); //1080//800//600   
 		grabber->set(CV_CAP_PROP_FPS, 30);
 		
-		if (options.saveVideo)
-			grabber->saveToVideo(options.videofilename);
+		
 
 		  
 		TGH tgh(grabber,options.input,calibrationFilename,modeldir, modelfile, scale,sheetWmt, sheetHmt, 10);
@@ -175,6 +174,8 @@ int main(int argc, char* argv[])
 
 			if (track_finger){ //track finger
 				if (!bkg_computed){		// make sure we have computed the Background
+					if (options.saveVideo)	//start saving the video when starting to create the background model.
+						grabber->saveToVideo(options.videofilename);
 					tgh.initializeUsing_SOM(numFramesBackground);
 					bkg_computed = true;
 				}
