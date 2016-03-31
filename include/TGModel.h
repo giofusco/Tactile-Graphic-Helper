@@ -13,7 +13,6 @@ using namespace std;
 class TGModel
 {
 
-
 public:
 	TGModel(void);
 	TGModel(string tgdir, string tgfilename);

@@ -1,9 +1,8 @@
 #include "FrameGrabber.h"
 #include "BackgroundGenerator.h"
 #include "TGH.h"
-#include <opencv2\opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-//#include <voce.h>
+//#include <opencv2\opencv.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 using namespace cv;
 using namespace std;
@@ -76,8 +75,7 @@ int main(int argc, char* argv[])
 {
 	try{
 
-		//************************************************************* OPTIONS PARSING
-		// Declare the supported options.
+		// parse options.
 		auto options = parseOptions(argc, argv);
 
 		string modeldir = "";
@@ -102,62 +100,23 @@ int main(int argc, char* argv[])
 		int numFramesBackground = options.k;
 		cout << "### numFramesBackground set to: " << numFramesBackground << endl;
 		
-
-		//float sheetWmt = 0.185;
-		//float sheetHmt = .25;
-		float sheetWmt = 1.;
-		float sheetHmt = 1.;
-
-		/*if (vm.count("tgH")) {
-			sheetHmt = vm["tgH"].as<float>();
-			cout << "### sheetHmt set to: " << sheetHmt << endl;
-		}
-
-		if (vm.count("tgW")) {
-			sheetWmt = vm["tgW"].as<float>();
-			cout << "### sheetWmt set to: " << sheetWmt << endl;
-		}*/
-		
-
-
-
-
-//		voce::init("C:/dev/voce-0.9.1/lib", true, true, "file://localhost/C:/dev/workspace/SKERI/x64/Release/TGH/grammar", "query_short");
-
-
-		//************************************************************* END OPTIONS PARSING
-
 		float scale = 1500;
 		 
 		int c = -1;
-		//FrameGrabber* grabber = new FrameGrabber(cameraURL,1024,768); //initialize the frame grabber
 		FrameGrabber* grabber = new FrameGrabber(options.input); //initialize the frame grabber
-		if (isLandscape){
-			float tmp = sheetHmt;
-			sheetHmt = sheetWmt;
-			sheetWmt = tmp;
-		}
-		
 
 		int ex = static_cast<int>(grabber->get(CV_CAP_PROP_FOURCC));
 		char EXT[] = { ex & 0XFF, (ex & 0XFF00) >> 8, (ex & 0XFF0000) >> 16, (ex & 0XFF000000) >> 24, 0 };
-		//grabber->set(CV_CAP_PROP_FOURCC, CV_FOURCC('H', '2', '6', '4'));
-		grabber->set(CV_CAP_PROP_FRAME_WIDTH, 320);//2304);//1829//1200//800
-		grabber->set(CV_CAP_PROP_FRAME_HEIGHT, 240);//1536); //1080//800//600   
+		grabber->set(CV_CAP_PROP_FRAME_WIDTH, 320);
+		grabber->set(CV_CAP_PROP_FRAME_HEIGHT, 240);
 		grabber->set(CV_CAP_PROP_FPS, 30);
 		
-		
-
-		  
-		TGH tgh(grabber,options.input,calibrationFilename,modeldir, modelfile, scale,sheetWmt, sheetHmt, 10);
-		//TGH tgh(grabber, cameraURL, calibrationFilename);
-		//tgh.loadTG(modeldir, modelfile);
+		TGH tgh(grabber,options.input,calibrationFilename,modeldir, modelfile, scale, 10);
 		Mat frame; //current frame
 
 		tgh.mute(options.mute);
 
 		c = -1;
-
 		cout << "TGH v.0.2" << endl;
 		cout << "Menu:" <<endl;
 		cout << "\t . [b] to (re)generate background" <<endl;
@@ -204,9 +163,7 @@ int main(int argc, char* argv[])
 				}
 				break;
 			case 't':
-
 				track_finger = !track_finger;
-
 				break;
 			case 'v':
 				show_trace = !show_trace;
