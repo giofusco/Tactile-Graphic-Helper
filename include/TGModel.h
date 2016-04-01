@@ -23,6 +23,7 @@ public:
 	string isThereA(string query); // returns yes or no if the query element is in the TG
 	string whatsThere(); //returns a list of all the elements in the TG
 	inline cv::Size getSize() { return imageSize_; }
+
 private:
 	string tgTitle_;
 	string tgType_;

@@ -1,5 +1,6 @@
 #include "TGH.h"
 
+
 TGH::TGH(FrameGrabber* grabber, string cameraURL, string calibrationFileName, string modeldir, string modelfile, float scale, int traceLength = 10) {
 	try {
 
@@ -39,7 +40,7 @@ TGH::TGH(FrameGrabber* grabber, string cameraURL, string calibrationFileName, st
 
 		grabber_ = grabber; //initialize the frame grabber
 		grabber_tt_ = grabber_->run(); //start the grabber
-	
+
 		//instantiate background generator
 		backGen_ = BackgroundGenerator(sheetW_, sheetH_);
 		tracker_ = FingerTracker();
@@ -67,34 +68,51 @@ void TGH::run(bool verbose) {
 
 	tracker_.track(hand, fingerTipOffset);
 	tracker_.showTips(backGen_.getBackgroundImage().clone());
-	numFrames++;
 
-	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
-	if (tips.size() == 1) {
-		if (tips[0].getStationaryTime() >= 1.1) {
-			if (!mute_) {
-				string ans = processQuery("okay what is this");
-				std::wstring stemp = std::wstring(ans.begin(), ans.end());
-				LPCWSTR sw = stemp.c_str();
-				clog << "TGH says: " << ans << endl;
-				HRESULT hr = pVoice_->Speak(sw, 0, NULL);
-				tips[0].resetStationaryTime(); //to avoid repeated feedback
-			}
+
+
+	numFrames++;
+	Fingertip tip;
+	//	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
+	//	if (tips.size() == 1) {
+	//		if (tips[0].getStationaryTime() >= 1.1) {
+	if (detectQueryGesture(tip)) {
+		if (!mute_) {
+			
+			string ans = processQuery("okay what is this");
+			if (logEvents_)
+				logQueryEvent(tip, ans);
+			std::wstring stemp = std::wstring(ans.begin(), ans.end());
+			LPCWSTR sw = stemp.c_str();
+			clog << "TGH says: " << ans << endl;
+			HRESULT hr = pVoice_->Speak(sw, 0, NULL);
+
+
 		}
 	}
-
 }
 
 
+void TGH::logQueryEvent(Fingertip tip, std::string ans) {
+	time_t timer;
+	time(&timer);
+	eventsLogFile_ << timer << " " << tip.getPosition(3).x << " " << tip.getPosition(3).y <<  " " << ans << std::endl;
+}
+
+
+bool TGH::detectQueryGesture(Fingertip &tip) {
+	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
+	if ((tips.size() == 1) && (tips[0].getStationaryTime() >= 1.1)) {
+		tips[0].resetStationaryTime(); //to avoid repeated feedback
+		tip = tips[0];
+		return true;
+	}
+	else return false;
+}
+
 void TGH::loadTG(string tgdir, string tgfile) {
 
-	//modelDir_ = tgdir;
-	//string filename = tgdir + '/' + tgfile;
-
 	querySys_ = TGModel(tgdir, tgfile);
-	//make sure the rectified image and the annotation image dimensions match
-	//Size s(floor(sheetW_*scale_), floor(sheetH_*scale_));
-	//querySys_.resizeAnnotations(querySys_.getSize());
 }
 
 // extract the query from the string
@@ -120,11 +138,6 @@ string TGH::processQuery(string query) {
 			else return "I can't see your finger!";
 		}
 	}
-	/*else
-		if (((found = query.find("is there") != string::npos)  || (found = query.find("are there") != string::npos)) && (found = query.find("what") == string::npos)){
-			ans = querySys_.isThereA(query);
-		}*/
-
 	return ans;
 }
 
@@ -134,6 +147,16 @@ TGH::~TGH(void)
 	grabber_->stop(); //close the stream and stop the grabber thread 
 	grabber_tt_.join(); // wait for the thread to rejoin 
 	delete grabber_;
+//	delete pVoice_;
+	eventsLogFile_.close();
 }
 
 
+void TGH::initEventLogging() {
+	if (!eventsFilename_.empty())
+		eventsLogFile_.open(eventsFilename_, std::ios_base::out | std::ios_base::app);
+	else{
+		clog << "Events log filename not specified. Not logging.";
+		logEvents_ = false;
+	}
+}

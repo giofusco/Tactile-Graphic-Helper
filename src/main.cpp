@@ -16,8 +16,10 @@ namespace {
 		std::string tgdir;
 		std::string tgfilename;
 		std::string videofilename;
+		std::string logfilename;
 		bool saveVideo;
 		bool mute;
+		bool logEvents;
 		int k;
 		float tgH;
 		float tgW;
@@ -40,6 +42,7 @@ namespace {
 			"{ k |	| 100          | frames for background               }"
 			"{ v |  |              | save video to the specified filename}"
 			"{ m | mute | false | if set to true, TGH won't answer questions}"
+			"{ l | log |  | specify events log file}"
 		};
 		cv::CommandLineParser parser(argc, argv, keys);
 		if ((1 == argc) || (parser.get<bool>("h")))
@@ -65,6 +68,11 @@ namespace {
 		if (!opts.videofilename.empty())
 			opts.saveVideo = true;
 		else opts.saveVideo = false;
+
+		opts.logfilename = parser.get<std::string>("l");
+		if (!opts.logfilename.empty())
+			opts.logEvents = true;
+		else opts.logEvents = false;
 
 		return opts;
 	}
@@ -115,6 +123,7 @@ int main(int argc, char* argv[])
 		Mat frame; //current frame
 
 		tgh.mute(options.mute);
+		tgh.logEvents(options.logEvents, options.logfilename);
 
 		c = -1;
 		cout << "TGH v.0.2" << endl;

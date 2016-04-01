@@ -242,5 +242,4 @@ void FingerTracker::showTips(cv::Mat image){
 		} 
 
 		cv::imshow("Filtered Tips", image);
-		//moveWindow("Filtered Tips", 10,10);
 }
