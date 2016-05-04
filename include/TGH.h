@@ -19,8 +19,8 @@ public:
 	TGH(FrameGrabber* grabber, string cameraURL, string calibrationFileName, string modeldir, string modelfile, float scale,int traceLength);
 	void run(bool verbose);
 	void loadTG(string tgdir, string tgfile);
-	string processQuery(string query);
-	bool detectQueryGesture(Fingertip &tip);
+	string processQuery(string query, Fingertip tip);
+	bool detectQueryGesture(Fingertip &tip, float threshold_secs);
 	inline void initializeUsing_SOM(int numframes) { backGen_.computeBackground_SOM(numframes, grabber_); }
 	inline cv::Mat getBackgroundImage() { return backGen_.getBackgroundImage(); }
 	inline void mute(bool status) { mute_ = status; }
@@ -37,6 +37,12 @@ private:
 	FrameGrabber* grabber_;
 	BackgroundGenerator backGen_;
 	FingerTracker tracker_;
+	Fingertip qtip_;//fingertip used in the last query
+
+	//used to enable second level feedback
+	cv::Point lastQueryLocation_;
+	time_t lastQueryTime_;
+
 	TGModel querySys_;
 	ISpVoice * pVoice_;
 	std::thread grabber_tt_; 

@@ -19,7 +19,7 @@ public:
 	~TGModel(void);
 
 	void resizeAnnotations(cv::Size sz);
-	string whatsAt(cv::Point pt); // returns the element in the point pt
+	string whatsAt(cv::Point pt, bool moreDetails); // returns the element in the point pt
 	string isThereA(string query); // returns yes or no if the query element is in the TG
 	string whatsThere(); //returns a list of all the elements in the TG
 	inline cv::Size getSize() { return imageSize_; }

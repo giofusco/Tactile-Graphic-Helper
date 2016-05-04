@@ -33,7 +33,8 @@ TGH::TGH(FrameGrabber* grabber, string cameraURL, string calibrationFileName, st
 
 
 		querySys_.resizeAnnotations(cv::Size(sheetW_, sheetH_));
-
+		lastQueryLocation_ = cv::Point(-1, -1);
+		lastQueryTime_ = 0;
 		frameno_ = 0;
 
 		fingerTipOffset = 0; //MODIFIED 3/29/16
@@ -66,6 +67,13 @@ void TGH::run(bool verbose) {
 	//cv::medianBlur(frame, frame, 3);
 	hand = backGen_.getForegroundMask_SOM(frame);
 
+
+	string filenameMask = "mask_" + to_string(numFrames) + ".png";
+	string filenameFrame = "frame_" + to_string(numFrames) + ".png";
+
+//	cv::imwrite(filenameMask, hand);
+//	cv::imwrite(filenameFrame, backGen_.getBackgroundImage());
+
 	tracker_.track(hand, fingerTipOffset);
 	tracker_.showTips(backGen_.getBackgroundImage().clone());
 
@@ -76,20 +84,46 @@ void TGH::run(bool verbose) {
 	//	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
 	//	if (tips.size() == 1) {
 	//		if (tips[0].getStationaryTime() >= 1.1) {
-	if (detectQueryGesture(tip)) {
+	if (detectQueryGesture(tip, .5)) {
 		if (!mute_) {
-			
-			string ans = processQuery("okay what is this");
-			if (logEvents_)
-				logQueryEvent(tip, ans);
-			std::wstring stemp = std::wstring(ans.begin(), ans.end());
-			LPCWSTR sw = stemp.c_str();
-			clog << "TGH says: " << ans << endl;
-			HRESULT hr = pVoice_->Speak(sw, 0, NULL);
-
+			float d = sqrt((tip.getPosition(3).x - lastQueryLocation_.x) * (tip.getPosition(3).x - lastQueryLocation_.x) +
+				(tip.getPosition(3).y - lastQueryLocation_.y) * (tip.getPosition(3).y - lastQueryLocation_.y));
+			cerr << "distance from last query point: " << d << endl;
+			if (d > 10 || lastQueryLocation_.x < 0 || double(difftime(time(NULL), lastQueryTime_) >= 2.)){ //only give feedback if the fingertip has moved far enough, otherwise it should give more details about this location
+				string ans = processQuery("okay what is this", tip);
+				lastQueryLocation_ = tip.getPosition(1);
+				if (logEvents_)
+					logQueryEvent(tip, ans);
+				std::wstring stemp = std::wstring(ans.begin(), ans.end());
+				LPCWSTR sw = stemp.c_str();
+				clog << "TGH says: " << ans << endl;
+				HRESULT hr = pVoice_->Speak(sw, 0, NULL);
+				time(&lastQueryTime_);
+			}
+			else if (detectQueryGesture(tip, 0.5)){
+				if (double(difftime(time(NULL), lastQueryTime_) < 2.)) {
+					string ans = processQuery("okay more info", tip);
+					std::wstring stemp = std::wstring(ans.begin(), ans.end());
+					LPCWSTR sw = stemp.c_str();
+					clog << "TGH says: " << ans << endl;
+					HRESULT hr = pVoice_->Speak(sw, 0, NULL);
+					time(&lastQueryTime_);
+				}
+			}
 
 		}
 	}
+	//check if the user is still holding the finger after a recent query
+	//else if (detectQueryGesture(tip, 0.5) && lastQueryLocation_.x > 0) { //the check on the lastQueryLocation is to make sure we asked something already
+	//	//if the tip is in a close location to the last query location
+	//	if (sqrt((tip.getPosition(3).x - lastQueryLocation_.x) * (tip.getPosition(3).x - lastQueryLocation_.x) +
+	//		(tip.getPosition(3).y - lastQueryLocation_.y) * (tip.getPosition(3).y - lastQueryLocation_.y)) < 5.) {
+	//		if (double(difftime(time(NULL), lastQueryTime_) < 2.)) {
+	//			string ans = processQuery("okay more info", tip);
+	//		}
+
+	//	}
+	//}
 }
 
 
@@ -100,9 +134,9 @@ void TGH::logQueryEvent(Fingertip tip, std::string ans) {
 }
 
 
-bool TGH::detectQueryGesture(Fingertip &tip) {
+bool TGH::detectQueryGesture(Fingertip &tip, float threshold_secs) {
 	vector<Fingertip> tips = tracker_.getLastSeenTip(3);
-	if ((tips.size() == 1) && (tips[0].getStationaryTime() >= 1.1)) {
+	if ((tips.size() == 1) && (tips[0].getStationaryTime() >= threshold_secs)) {
 		tips[0].resetStationaryTime(); //to avoid repeated feedback
 		tip = tips[0];
 		return true;
@@ -116,7 +150,7 @@ void TGH::loadTG(string tgdir, string tgfile) {
 }
 
 // extract the query from the string
-string TGH::processQuery(string query) {
+string TGH::processQuery(string query,Fingertip tip) {
 	std::size_t found, found2;
 	string ans;
 	// branch #1 -- Either asking the list of items or what's in a point
@@ -124,19 +158,21 @@ string TGH::processQuery(string query) {
 		if (found2 = query.find("there", found) != string::npos) {
 			//ask the list
 			ans = querySys_.whatsThere();
-			//	;
 		}
 		if (found2 = query.find("this", found) != string::npos) {
 			//ask what's in a location
 			//need to know that there's only on tip visible
-			vector<cv::Point> tips = tracker_.getLastSeen(3);
-			if (tips.size() == 1) {
+			//vector<cv::Point> tips = tracker_.getLastSeen(3);
+			//if (tips.size() == 1) {
 				//cerr << "Query pt: " << tips[0] << endl;
-				ans = querySys_.whatsAt(tips[0]);
-			}
-			else if (tips.size() > 1) return "Use one finger, please!";
-			else return "I can't see your finger!";
+				ans = querySys_.whatsAt(tip.getPosition(1), false);
+			//}
+			//else if (tips.size() > 1) return "Use one finger, please!";
+			//else return "I can't see your finger!";
 		}
+	}
+	else if (found = query.find("more info") != string::npos) {
+		ans = querySys_.whatsAt(tip.getPosition(1), true);
 	}
 	return ans;
 }
@@ -145,7 +181,7 @@ string TGH::processQuery(string query) {
 TGH::~TGH(void)
 {
 	grabber_->stop(); //close the stream and stop the grabber thread 
-	grabber_tt_.join(); // wait for the thread to rejoin 
+	grabber_tt_.join(); // wait for the thread to rejoin  
 	delete grabber_;
 //	delete pVoice_;
 	eventsLogFile_.close();

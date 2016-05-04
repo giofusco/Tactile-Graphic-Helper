@@ -28,6 +28,10 @@ FeatureInfo::FeatureInfo(cv::FileNode fn){
 			to = string(ftmp);
 		else if (ftmp.name() == "Quantity")
 			qty = int(ftmp);
+		else if (ftmp.name() == "Shape")
+			shape = string(ftmp);
+		else if (ftmp.name() == "Label_to")
+			label_to = string(ftmp);
 	}
 }
 

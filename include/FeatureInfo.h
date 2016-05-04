@@ -22,6 +22,8 @@ public:
 	string purpose;
 	string from;
 	string to;
+	string shape;
+	string label_to;
 	int qty;
 	
 };

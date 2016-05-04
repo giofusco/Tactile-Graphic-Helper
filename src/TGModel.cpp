@@ -38,7 +38,7 @@ TGModel::TGModel(string tgdir, string tgfilename)
 			}
 
 		}
-		//filename = "C:/Users/Giovanni/Documents/Visual Studio 2012/Projects/SKERI/x64/Debug/TG_export_matrix.bmp"; //TODO: remove this
+	
 		loadAnnotations(annotationfile, rows, cols);
 		n = fs["Features"];
 		for (it = n.begin();it!=n.end();++it){
@@ -55,6 +55,7 @@ TGModel::TGModel(string tgdir, string tgfilename)
 TGModel::~TGModel(void)
 {
 }
+
 
 void TGModel::loadAnnotations(string filename, int rows, int cols){
 
@@ -125,7 +126,7 @@ string TGModel::isThereA(string query){
 	return ans;
 }
 
-string TGModel::whatsAt(cv::Point pt){
+string TGModel::whatsAt(cv::Point pt, bool moreDetails){
 	cv::Mat tmp;
 	double min;
 	double max;
@@ -169,7 +170,7 @@ string TGModel::whatsAt(cv::Point pt){
 
 			}
 
-			if (minDistC < 10.){
+			if (minDistC < 10.){ //it was 10
 				circle(tmp,annotContours_[minidx][minidxC],3, cv::Scalar(2550,0,0),2);
 				id = int(annotations_.at<uchar>(annotContours_[minidx][minidxC]));
 			}
@@ -178,12 +179,51 @@ string TGModel::whatsAt(cv::Point pt){
 	}
 	//imshow("Query point", tmp);
 
+	///TODO: Refactor this set of tests
+
 	string ans;
-	if (id > 0){
+	if (id > 0 && !moreDetails){
 		map<int,FeatureInfo>::iterator it;
 		it=features.find(id);
 		if (it!=features.end())
 			ans = "That is " + features[id].title;
+		else
+			ans = "I am not sure, try again";
+	}
+	else if (id > 0 && moreDetails) {
+		map<int, FeatureInfo>::iterator it;
+		it = features.find(id);
+		if (it != features.end()) {
+			
+			//gather info about the style and type of feature
+			string style;
+			if (!features[id].style.empty() && !features[id].type.empty())
+				style = "It's a " + features[id].style + " " + features[id].type + ". ";
+			else if (!features[id].type.empty())
+				style = "It's a " + features[id].type + ". ";
+			//gather info about the shape
+			string shape;
+			if (!features[id].shape.empty()) {
+				shape = "it's shape is a " + features[id].shape + ". ";
+			}
+			//purpose
+			string purpose;
+			if (!features[id].purpose.empty()) {
+				purpose = "it's purpose is " + features[id].purpose + ". ";
+			}
+			//label to
+			string label_to;
+			if (!features[id].label_to.empty()) {
+				label_to = "it labels " + features[id].label_to + ". ";
+			}
+			//relates
+			string relates;
+			if (!features[id].from.empty() && !features[id].to.empty()) {
+				relates = "it relates " + features[id].from + " to " + features[id].to + ". ";
+			}
+			ans = style + shape + purpose + label_to + relates;
+
+		}
 		else
 			ans = "I am not sure, try again";
 	}
