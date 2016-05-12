@@ -91,6 +91,7 @@ void TGH::run(bool verbose) {
 			cerr << "distance from last query point: " << d << endl;
 			if (d > 10 || lastQueryLocation_.x < 0 || double(difftime(time(NULL), lastQueryTime_) >= 2.)){ //only give feedback if the fingertip has moved far enough, otherwise it should give more details about this location
 				string ans = processQuery("okay what is this", tip);
+				qtip_ = tip;
 				lastQueryLocation_ = tip.getPosition(1);
 				if (logEvents_)
 					logQueryEvent(tip, ans);
@@ -102,12 +103,12 @@ void TGH::run(bool verbose) {
 			}
 			else if (detectQueryGesture(tip, 0.5)){
 				if (double(difftime(time(NULL), lastQueryTime_) < 2.)) {
-					string ans = processQuery("okay more info", tip);
+					string ans = processQuery("okay more info", qtip_);
 					std::wstring stemp = std::wstring(ans.begin(), ans.end());
 					LPCWSTR sw = stemp.c_str();
 					clog << "TGH says: " << ans << endl;
 					HRESULT hr = pVoice_->Speak(sw, 0, NULL);
-					time(&lastQueryTime_);
+					//time(&lastQueryTime_);
 				}
 			}
 
